@@ -1022,3 +1022,23 @@ class Evolving(Source):
                                          custom_psd=custom_psd,
                                          verbose=verbose)
         return self.snr
+
+
+class VerificationBinaries(Source):
+    """Generate a Source class with the LISA verification binaries preloaded.
+    Data for the binaries is gathered from Kupfer+18 Table 1 and 2."""
+
+    def __init__(self):
+        # open file containing verification binary data
+        with resources.path(package="legwork",
+                            resource="mytest.npy") as path:
+            vbs = np.load(path, allow_pickle=True)
+            vbs = vbs.item()
+
+        # call the usual Source init function with this data
+        super().__init__(m_1=vbs["m_1"], m_2=vbs["m_2"], dist=vbs["dist"],
+                         f_orb=vbs["f_GW"] / 2, ecc=np.zeros(len(vbs["m_1"])))
+
+        # also assign the labels and SNR
+        self.labels = vbs["label"]
+        self.true_snr = vbs["snr"]
